@@ -165,6 +165,10 @@
         <asm.version>9.6</asm.version>
         <checker-qual.version>3.42.0</checker-qual.version>
         <error_prone_annotations.version>2.25.0</error_prone_annotations.version>
+
+        <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}../storm-clojure/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+
+
     </properties>
 
     <modules>
@@ -525,6 +529,25 @@
                 <module>examples/storm-jms-examples</module>
                 <module>examples/storm-perf</module>
             </modules>
+        </profile>
+        <profile>
+            <id>jacoco</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.10</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
@@ -1248,8 +1271,8 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <!--version>${surefire.version}</version-->
                     <version>3.0.0-M4</version>
+                    <!-- commenting for running Jacoco>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <excludedGroups>IntegrationTest | ${java.unit.test.exclude.groups}</excludedGroups>
@@ -1260,7 +1283,7 @@
                         <systemPropertyVariables>
                             <storm.home>${project.basedir}/target/testhome</storm.home>
                         </systemPropertyVariables>
-                    </configuration>
+                    </configuration-->
                 </plugin>
                 <!-- FAILSAFE plugin-->
                 <plugin>
