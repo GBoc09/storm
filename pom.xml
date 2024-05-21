@@ -469,6 +469,7 @@
             <build>
                 <pluginManagement>
                     <plugins>
+                        <!-- Surfire plugin-->
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-surefire-plugin</artifactId>
@@ -847,6 +848,8 @@
                 <artifactId>metrics-jvm</artifactId>
                 <version>${metrics.version}</version>
             </dependency>
+
+            <!-- MOKITO -->
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
@@ -859,6 +862,8 @@
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
+
+
             <dependency>
                 <groupId>org.awaitility</groupId>
                 <artifactId>awaitility</artifactId>
@@ -1239,10 +1244,12 @@
     <build>
         <pluginManagement>
             <plugins>
+                <!-- SURFIRE plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${surefire.version}</version>
+                    <!--version>${surefire.version}</version-->
+                    <version>3.0.0-M4</version>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <excludedGroups>IntegrationTest | ${java.unit.test.exclude.groups}</excludedGroups>
@@ -1255,10 +1262,11 @@
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
+                <!-- FAILSAFE plugin-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${surefire.version}</version>
+                    <version>3.0.0-M4</version>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <includes>
