@@ -67,13 +67,13 @@ public class WindowedBoltExecutor implements IRichBolt {
     private static final int DEFAULT_MAX_LAG_MS = 0; // no lag
     private final IWindowedBolt bolt;
     // package level for unit tests
-    transient WaterMarkEventGenerator<Tuple> waterMarkEventGenerator;
+    public transient WaterMarkEventGenerator<Tuple> waterMarkEventGenerator;
     private transient WindowedOutputCollector windowedOutputCollector;
     private transient WindowLifecycleListener<Tuple> listener;
     private transient WindowManager<Tuple> windowManager;
     private transient int maxLagMs;
     private TimestampExtractor timestampExtractor;
-    private transient String lateTupleStream;
+    public transient String lateTupleStream;
     private transient TriggerPolicy<Tuple, ?> triggerPolicy;
     private transient EvictionPolicy<Tuple, ?> evictionPolicy;
     private transient Duration windowLengthDuration;
