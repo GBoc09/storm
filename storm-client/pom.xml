@@ -348,10 +348,9 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-            <!--
             <properties>
-              <argLine>-javaagent:target/dependency/ba-dua-agent-rt-${ba-dua.version}-all.jar -Doutput.file=target/badua.ser</argLine>
-            </properties> -->
+              <argLine>-javaagent:../dfc/ba-dua-agent-rt-${ba-dua.version}-all.jar -Doutput.file=target/badua.ser</argLine>
+            </properties>
             <!-- Needed for generate the report -->
             <dependencies>
                 <dependency>
@@ -457,9 +456,11 @@
                             <threads>4</threads>
                             <targetClasses>
                                 <param>org.apache.storm.topology.WindowedBoltExecutor</param>
+                                <param>org.apache.storm.windowing.WindowManager</param>
                             </targetClasses>
                             <targetTests>
                                 <param>org.apache.storm.topology.WindowedBoltExecutorTest</param>
+                                <param>org.apache.storm.windowing.WindowManagerTest</param>
                             </targetTests>
                         </configuration>
                     </plugin>

@@ -7,13 +7,11 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.windowing.TimestampExtractor;
 import org.apache.storm.windowing.WaterMarkEventGenerator;
-import org.apache.storm.windowing.WindowManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.mockito.Mockito;
 
 import java.util.*;
 
@@ -34,7 +32,8 @@ public class WindowedBoltExecutorTest {
         NEW, // with no configuration specified
         NULL,
         LTS, // specified late tuple stream
-        INVALID,
+        INVALID, // set of configuration that can't be together
+        WRONG // wrong initialization
 
     }
     private CONFIG config;
@@ -55,6 +54,8 @@ public class WindowedBoltExecutorTest {
 
         executorTuples.add(new WindowedBoltExecutorTuple(true, CONFIG.LTS, true));
         executorTuples.add(new WindowedBoltExecutorTuple(false, CONFIG.INVALID, true));
+
+        executorTuples.add(new WindowedBoltExecutorTuple(false, CONFIG.WRONG, true));
 
         return executorTuples;
     }
@@ -84,9 +85,9 @@ public class WindowedBoltExecutorTest {
 
         this.executor = new WindowedBoltExecutor(bolt);
         try{
+            this.configurations = new HashMap<>();
             switch (this.config){
                 case VALID:
-                    this.configurations = new HashMap<>();
                     this.configurations.put(Config.TOPOLOGY_BOLTS_WINDOW_LENGTH_COUNT, 1); // configure the bolts' window length  as a number of tuple
                     break;
                 case NEW:
@@ -96,28 +97,35 @@ public class WindowedBoltExecutorTest {
                     this.configurations = null;
                     break;
                 case LTS:
-                    this.configurations = new HashMap<>();
                     this.configurations.put(Config.TOPOLOGY_BOLTS_LATE_TUPLE_STREAM, "testStream"); // fixed stream for late tuple
                     break;
                 case INVALID:
-                    this.configurations = new HashMap<>();
                     this.configurations.put(Config.TOPOLOGY_MESSAGE_TIMEOUT_SECS, 10);
                     this.configurations.put(Config.TOPOLOGY_BOLTS_WINDOW_LENGTH_DURATION_MS, 10000);
                     this.configurations.put(Config.TOPOLOGY_BOLTS_SLIDING_INTERVAL_DURATION_MS, 5000);
                     break;
+                case WRONG:
+                    this.configurations.put(Config.TOPOLOGY_BOLTS_WINDOW_LENGTH_COUNT, 1);
+                    this.configurations.put(Config.TOPOLOGY_BOLTS_LATE_TUPLE_STREAM, "testStream");
+                    break;
+
 
             }
         }catch (Exception e){
             e.printStackTrace();
         }
     }
-    /** we wanna try what happens when we add a late tuple  in a valid window, what happens if the tuple is invalid */
+    /** we will try what happens when we add a late tuple  in a valid window, what happens if the tuple is invalid */
     @Test
     public void ackGeneratedTest() throws Exception {
         Tuple tuple = mock(Tuple.class);
         TopologyContext context = mock(TopologyContext.class);
         OutputCollector collector = mock(OutputCollector.class);
         try{
+            if(config == CONFIG.WRONG){
+                executor.prepare(this.configurations, context, collector);
+                Assert.fail("Wrong confing");
+            }
             executor.prepare(this.configurations, context, collector);
             this.executor.waterMarkEventGenerator = this.waterMarkEventGenerator;
 
