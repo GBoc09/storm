@@ -348,9 +348,10 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-            <properties>
-              <argLine>-javaagent:../dfc/ba-dua-agent-rt-${ba-dua.version}-all.jar -Doutput.file=target/badua.ser</argLine>
-            </properties>
+            <!--
+      <properties>
+        <argLine>-javaagent:target/dependency/ba-dua-agent-rt-${ba-dua.version}-all.jar -Doutput.file=target/badua.ser</argLine>
+      </properties> -->
             <!-- Needed for generate the report -->
             <dependencies>
                 <dependency>
