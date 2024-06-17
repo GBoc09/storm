@@ -13,10 +13,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Set up JDK 1.8
+      - name: Set up JDK 17.0.10
         uses: actions/setup-java@v3
         with:
-          java-version: 8.0.372
+          java-version: 11.0.23
           distribution: 'zulu' # Alternative distribution options are available.
       - name: Cache Maven packages
         uses: actions/cache@v4
@@ -31,7 +31,7 @@ jobs:
           git checkout d2401f0
           mvn clean install
           cd ..
-      - name: Build and analyze bookkeeper project
+      - name: Build and analyze storm project
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         run: mvn clean verify -P BaDua
@@ -39,5 +39,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: BaDuaCoverage_Report
-          path: bookkeeper-server/target/badua.xml
+          path: storm-client/target/badua.xml
           if-no-files-found: error
