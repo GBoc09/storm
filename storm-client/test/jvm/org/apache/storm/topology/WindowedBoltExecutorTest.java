@@ -130,13 +130,17 @@ public class WindowedBoltExecutorTest {
             this.executor.waterMarkEventGenerator = this.waterMarkEventGenerator;
 
             this.executor.execute(tuple);
-            int wantedNumberOfInvocations = (this.isLate) ? 1 : 0;
+            int wantedNumberOfInvocations;
+            if(this.isLate) {
+                wantedNumberOfInvocations = 1;
+            }else {
+                wantedNumberOfInvocations = 0;
+            }
 
             if(this.configurations.containsKey(Config.TOPOLOGY_BOLTS_LATE_TUPLE_STREAM)){
                 String stream = (String) this.configurations.get(Config.TOPOLOGY_BOLTS_LATE_TUPLE_STREAM);
                 verify(collector, times(1)).emit(stream, Arrays.asList(tuple), new Values(tuple));
             }
-
             verify(collector, times(wantedNumberOfInvocations)).ack(tuple);
 
             Assert.assertFalse(this.expectedException);
@@ -144,5 +148,7 @@ public class WindowedBoltExecutorTest {
             Assert.assertTrue(this.expectedException);
         }
     }
+    /** verify() to check methods were called with given arguments
+     * can use flexible argument matching, or a capture */
 }
 

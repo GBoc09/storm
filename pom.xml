@@ -68,6 +68,9 @@
     </issueManagement>
 
     <properties>
+        <sonar.organization>gboc09</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>${maven.compiler.target}</maven.compiler.source>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
@@ -205,7 +208,7 @@
             <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
-   </dependencies>
+    </dependencies>
 
     <profiles>
         <!--

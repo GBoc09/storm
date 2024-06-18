@@ -1,5 +1,6 @@
 package org.apache.storm.windowing;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,9 +86,9 @@ public class WindowManagerTest {
             if (this.threshold > this.eventsToBeAdded.size()) {
                 this.expectedExpiredEvent = Collections.emptyList();
             } else {
-                int expiredLenght = this.eventsToBeAdded.size() - this.threshold;
+                int expiredLength = this.eventsToBeAdded.size() - this.threshold;
                 this.expectedExpiredEvent = new ArrayList<>();
-                for (int i = 0; i < expiredLenght; i++) {
+                for (int i = 0; i < expiredLength; i++) {
                     this.expectedExpiredEvent.add(this.eventsToBeAdded.get(i));
                 }
             }
@@ -113,6 +114,11 @@ public class WindowManagerTest {
             this.windowManager.setTriggerPolicy(triggerPolicy);
             triggerPolicy.start();
         }
+    }
+
+    @After
+    public void tearDown() {
+        this.windowManager.shutdown();
     }
 
     @Test
