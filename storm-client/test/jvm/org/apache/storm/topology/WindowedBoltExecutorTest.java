@@ -55,7 +55,7 @@ public class WindowedBoltExecutorTest {
         executorTuples.add(new WindowedBoltExecutorTuple(true, CONFIG.LTS, true));
         executorTuples.add(new WindowedBoltExecutorTuple(false, CONFIG.INVALID, true));
 
-        executorTuples.add(new WindowedBoltExecutorTuple(false, CONFIG.WRONG, true));
+        executorTuples.add(new WindowedBoltExecutorTuple(true, CONFIG.WRONG, true));
 
         return executorTuples;
     }
@@ -99,8 +99,8 @@ public class WindowedBoltExecutorTest {
                 case LTS:
                     this.configurations.put(Config.TOPOLOGY_BOLTS_LATE_TUPLE_STREAM, "testStream"); // fixed stream for late tuple
                     break;
-                case INVALID:
-                    this.configurations.put(Config.TOPOLOGY_MESSAGE_TIMEOUT_SECS, 10);
+                case INVALID: // timeout timer shorter than the window length
+                    this.configurations.put(Config.TOPOLOGY_MESSAGE_TIMEOUT_SECS, 10); // max amount of time given to the topology to fully process a message emitted by a spouts, if it isn't acked within this time frame, storm will fail
                     this.configurations.put(Config.TOPOLOGY_BOLTS_WINDOW_LENGTH_DURATION_MS, 10000);
                     this.configurations.put(Config.TOPOLOGY_BOLTS_SLIDING_INTERVAL_DURATION_MS, 5000);
                     break;

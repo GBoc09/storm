@@ -40,7 +40,6 @@ public class WindowManagerTest {
     public static Collection<WindowManagerTuple> getWindowManagerTuple() {
         List<WindowManagerTuple> windowManagerTuples = new ArrayList<>();
 
-        //windowManagerTuples.add(new WindowManagerTuple(LIST_STATE.EMPTY, -1));
         windowManagerTuples.add(new WindowManagerTuple(LIST_STATE.EMPTY, 1, false));
         windowManagerTuples.add(new WindowManagerTuple(LIST_STATE.NOT_EMPTY, 3, false ));
         windowManagerTuples.add(new WindowManagerTuple(LIST_STATE.NOT_EMPTY, 4, false));
@@ -93,15 +92,16 @@ public class WindowManagerTest {
                 }
             }
             this.actualExpiredEvent = new ArrayList<>();
-
+            /* configure the mock for onExpiry method, if it is called with an expired list of event, these events will be added in actualExpiredEvents.
+            * with doAnswer we want to modify as we desire behavior of the mock */
             doAnswer((mockedInstance) -> {
                 List<String> expiredEvents = mockedInstance.getArgument(0);
                 this.actualExpiredEvent.addAll(expiredEvents);
                 return null;
             }).when(listener).onExpiry(anyList());
             this.windowManager = new WindowManager<>(listener);
-            CountEvictionPolicy<String> evictionPolicy = new CountEvictionPolicy<>(this.threshold);
-            CountTriggerPolicy<String> triggerPolicy = new CountTriggerPolicy<>(TRIGGER_WINDOW, this.windowManager, evictionPolicy);
+            CountEvictionPolicy<String> evictionPolicy = new CountEvictionPolicy<>(this.threshold); // esclusion policy with a specific threshold
+            CountTriggerPolicy<String> triggerPolicy = new CountTriggerPolicy<>(TRIGGER_WINDOW, this.windowManager, evictionPolicy); // trigger policy with a fixed dimention. It also determines if and when it has to be applied
             this.windowManager.setEvictionPolicy(evictionPolicy);
             this.windowManager.setTriggerPolicy(triggerPolicy);
             triggerPolicy.start();
