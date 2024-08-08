@@ -52,7 +52,7 @@ public class WindowedBoltExecutorTest {
         executorTuples.add(new WindowedBoltExecutorTuple(true, CONFIG.NEW, true));
         executorTuples.add(new WindowedBoltExecutorTuple(true, CONFIG.NULL, true));
 
-        executorTuples.add(new WindowedBoltExecutorTuple(true, CONFIG.LTS, true));
+        executorTuples.add(new WindowedBoltExecutorTuple(true, CONFIG.LTS, false));
         executorTuples.add(new WindowedBoltExecutorTuple(false, CONFIG.INVALID, true));
 
         executorTuples.add(new WindowedBoltExecutorTuple(true, CONFIG.WRONG, true));
@@ -96,15 +96,17 @@ public class WindowedBoltExecutorTest {
                 case NULL:
                     this.configurations = null;
                     break;
-                case LTS:
+                case LTS: // configure a specific stream for the late tuple
                     this.configurations.put(Config.TOPOLOGY_BOLTS_LATE_TUPLE_STREAM, "testStream"); // fixed stream for late tuple
+                    this.configurations.put(Config.TOPOLOGY_BOLTS_WATERMARK_EVENT_INTERVAL_MS, 10);
+                    this.configurations.put(Config.TOPOLOGY_BOLTS_WINDOW_LENGTH_COUNT, 1);
                     break;
                 case INVALID: // timeout timer shorter than the window length
                     this.configurations.put(Config.TOPOLOGY_MESSAGE_TIMEOUT_SECS, 10); // max amount of time given to the topology to fully process a message emitted by a spouts, if it isn't acked within this time frame, storm will fail
                     this.configurations.put(Config.TOPOLOGY_BOLTS_WINDOW_LENGTH_DURATION_MS, 10000);
                     this.configurations.put(Config.TOPOLOGY_BOLTS_SLIDING_INTERVAL_DURATION_MS, 5000);
                     break;
-                case WRONG:
+                case WRONG: // wrong configuration, verify the wrong initialization
                     this.configurations.put(Config.TOPOLOGY_BOLTS_WINDOW_LENGTH_COUNT, 1);
                     this.configurations.put(Config.TOPOLOGY_BOLTS_LATE_TUPLE_STREAM, "testStream");
                     break;
@@ -117,7 +119,7 @@ public class WindowedBoltExecutorTest {
     }
     /** we will try what happens when we add a late tuple  in a valid window, what happens if the tuple is invalid */
     @Test
-    public void ackGeneratedTest() throws Exception {
+    public void ackGeneratedTest() {
         Tuple tuple = mock(Tuple.class);
         TopologyContext context = mock(TopologyContext.class);
         OutputCollector collector = mock(OutputCollector.class);
@@ -125,6 +127,11 @@ public class WindowedBoltExecutorTest {
             if(config == CONFIG.WRONG){
                 executor.prepare(this.configurations, context, collector);
                 Assert.fail("Wrong confing");
+            }
+            if (config != CONFIG.NULL && this.configurations.containsKey(Config.TOPOLOGY_BOLTS_LATE_TUPLE_STREAM)){
+                Set<String>stream = new HashSet<>();
+                stream.add((String) this.configurations.get(Config.TOPOLOGY_BOLTS_LATE_TUPLE_STREAM));
+                when(context.getThisStreams()).thenReturn(stream);
             }
             executor.prepare(this.configurations, context, collector);
             this.executor.waterMarkEventGenerator = this.waterMarkEventGenerator;
@@ -143,7 +150,8 @@ public class WindowedBoltExecutorTest {
             }
             verify(collector, times(wantedNumberOfInvocations)).ack(tuple);
 
-            Assert.assertFalse(this.expectedException);
+
+            Assert.assertFalse("An exception should be thrown.", this.expectedException);
         }catch (IllegalArgumentException | NullPointerException e) {
             Assert.assertTrue(this.expectedException);
         }
