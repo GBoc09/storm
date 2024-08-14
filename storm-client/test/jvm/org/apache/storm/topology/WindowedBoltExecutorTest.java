@@ -7,6 +7,7 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.windowing.TimestampExtractor;
 import org.apache.storm.windowing.WaterMarkEventGenerator;
+import org.apache.storm.windowing.WindowManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +34,8 @@ public class WindowedBoltExecutorTest {
         NULL,
         LTS, // specified late tuple stream
         INVALID, // set of configuration that can't be together
-        WRONG // wrong initialization
+        WRONG, // wrong initialization
+        NO_TIMESTAMP // consider a tuple without any timestamp
 
     }
     private CONFIG config;
@@ -54,6 +56,8 @@ public class WindowedBoltExecutorTest {
 
         executorTuples.add(new WindowedBoltExecutorTuple(true, CONFIG.LTS, false));
         executorTuples.add(new WindowedBoltExecutorTuple(false, CONFIG.INVALID, true));
+
+        executorTuples.add(new WindowedBoltExecutorTuple(false, CONFIG.NO_TIMESTAMP, false));
 
         executorTuples.add(new WindowedBoltExecutorTuple(true, CONFIG.WRONG, true));
 
@@ -77,9 +81,14 @@ public class WindowedBoltExecutorTest {
     @Before
     public void setUp() throws Exception {
         IWindowedBolt bolt = mock(IWindowedBolt.class); // an IWindowedBolt wrapper that does the windowing of tuples
-        TimestampExtractor timestampExtractor = mock(TimestampExtractor.class); // we need to simulate this class execution because it is necessary for calling the constructor
-        when(bolt.getTimestampExtractor()).thenReturn(timestampExtractor);
-
+        TimestampExtractor timestampExtractor = mock(TimestampExtractor.class);
+        if (config == CONFIG.NO_TIMESTAMP) {
+            // we need to simulate this class execution because it is necessary for calling the constructor
+            when(bolt.getTimestampExtractor()).thenReturn(null);
+        } else {
+            // we need to simulate this class execution because it is necessary for calling the constructor
+            when(bolt.getTimestampExtractor()).thenReturn(timestampExtractor);
+        }
         this.waterMarkEventGenerator = mock(WaterMarkEventGenerator.class);
         when(this.waterMarkEventGenerator.track(any(), anyLong())).thenReturn(!this.isLate); // track method will be called with 2 arguments, it will return isLate
 
@@ -110,7 +119,9 @@ public class WindowedBoltExecutorTest {
                     this.configurations.put(Config.TOPOLOGY_BOLTS_WINDOW_LENGTH_COUNT, 1);
                     this.configurations.put(Config.TOPOLOGY_BOLTS_LATE_TUPLE_STREAM, "testStream");
                     break;
-
+                case NO_TIMESTAMP:
+                    this.configurations.put(Config.TOPOLOGY_BOLTS_WINDOW_LENGTH_COUNT, 1);
+                    break;
 
             }
         }catch (Exception e){
@@ -138,6 +149,11 @@ public class WindowedBoltExecutorTest {
 
             this.executor.execute(tuple);
             int wantedNumberOfInvocations;
+
+            if (config == CONFIG.NO_TIMESTAMP){
+                wantedNumberOfInvocations = 0;
+
+            }
             if(this.isLate) {
                 wantedNumberOfInvocations = 1;
             }else {
@@ -156,6 +172,17 @@ public class WindowedBoltExecutorTest {
             Assert.assertTrue(this.expectedException);
         }
     }
+
+    @Test
+    public void startInvocationTest(){
+        IWindowedBolt bolt = mock(IWindowedBolt.class);
+        WindowedBoltExecutor spyExecutor = spy(new WindowedBoltExecutor(bolt));
+        Map<String, Object> config = new HashMap<>();
+        config.put(Config.TOPOLOGY_BOLTS_WINDOW_LENGTH_COUNT, 1);
+        spyExecutor.prepare(config, mock(TopologyContext.class), mock(OutputCollector.class));
+        verify(spyExecutor, times(1)).start();
+    }
+
     /** verify() to check methods were called with given arguments
      * can use flexible argument matching, or a capture */
 }
